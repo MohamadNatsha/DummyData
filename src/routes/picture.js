@@ -110,16 +110,15 @@ function selectImage(isRandom, tags, id, minWidth, maxWidth, minHeight, maxHeigh
     // if isRandom=true, change id to a valid id in the results space
     // now choose from the database the required image
     // after all, you need to return the url of the selected image
-    
-    return {isRandom: isRandom, id: id, tags: tags, minWidth: minWidth, maxWidth: maxWidth,
-        minHeight: minHeight, maxHeight: maxHeight};//just for testing
+
+    return "https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png";
 }
 
 
 router.get(['/', '/r', '/random'], (req,res) => {
 
     //extract widths and heighs from query string
-    sizeResult = getWidthAndHeight(req.query);
+    size = getWidthAndHeight(req.query);
 
     //extract tags from query string
     tags = [];
@@ -129,13 +128,13 @@ router.get(['/', '/r', '/random'], (req,res) => {
             tags.push(key.trim());
     }
 
-    res.send(selectImage(true, tags, -1, sizeResult.minWidth, sizeResult.maxWidth, sizeResult.minHeight, sizeResult.maxHeight));
+    res.send(selectImage(true, tags, -1, size.minWidth, size.maxWidth, size.minHeight, size.maxHeight));
 });
 
 router.get('/:id', (req,res) =>{
 
     //extract widths and heighs from query string
-    sizeResult = getWidthAndHeight(req.query);
+    size = getWidthAndHeight(req.query);
 
     //extract tags from query string
     tags = [];
@@ -148,7 +147,7 @@ router.get('/:id', (req,res) =>{
     //extract id from url parameters
     id = req.params.id;//maybe parse it to int
 
-    res.send(selectImage(false, tags, id, sizeResult.minWidth, sizeResult.maxWidth, sizeResult.minHeight, sizeResult.maxHeight));
+    res.send(selectImage(false, tags, id, size.minWidth, size.maxWidth, size.minHeight, size.maxHeight));
 });
 
 module.exports = router;

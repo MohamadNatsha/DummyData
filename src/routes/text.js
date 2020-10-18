@@ -19,14 +19,13 @@ function getRandomString(length)
     return result;
 }
 
-function getStringHash(s, a)
+function getStringHash(s)
 {
-    //TODO: remove the parameter (a) if numWords will not affect the text
     let hash = 0;
-    let b = 3;
+    let b = 2;
     for(var i=0;i<s.length;i++)
     {
-        hash += s[i].charCodeAt(0) * (a/17) * (Math.pow(b, s.length-1-i));
+        hash += s[i].charCodeAt(0) * (Math.pow(b, s.length-1-i));
         hash = parseInt(hash);
     }
     return hash;
@@ -37,8 +36,13 @@ function selectText(isRandom, id, numWords, maxLength)
     if(isRandom)
         id = getRandomString(MAX_ID_LENGTH);
 
-    // TODO: this has to be taken from the Database with (length < maxLength)
-    words = ["cat", "dog", "database", "video", "how", "general", "localization", "default", "pachage"];
+    // TODO: this has to be taken from the Database with (length <= maxLength)
+    words = ["cat", "dog", "database", "video", "how",
+    "general", "localization", "default", "pachage",
+    "the", "there", "use", "be", "at", "would", "first",
+    "each", "have", "been", "call", "do", "had", "its",
+    "now", "time", "word", "list", "look", "number", 
+    "said", "part", "these", "while", "wish", "large"];
 
     result = "";
     for(var i=0;i<numWords;i++)
@@ -46,7 +50,7 @@ function selectText(isRandom, id, numWords, maxLength)
         if(i!=0)
             result += " ";
         
-        result += words[getStringHash(id + (i+1), numWords*9*24%113) % words.length];
+        result += words[getStringHash(id + i) % words.length];
     }
     return result;
 }
