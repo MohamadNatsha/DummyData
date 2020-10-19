@@ -3,22 +3,41 @@ const sharp = require('sharp');
 const { format } = require("sharp");
 const axios = require('axios');
 const request = require('request');
+const pictureModel = require('../models/picture');
 
 const MaxImgWidth = 2048;
 const MinImgWidth = 16;
 const MaxImgHeight = 1500;
 const MinImgHeight = 16;
 
-function selectImage(id,tags)
+const defaultImg = 'local://default.jpg';
+
+async function selectImage(id,queryTags)
 {
     let isRandom = id == undefined;
-    // TODO:
-    // if isRandom=true, change id to a valid id in the results space
-    // now choose from the database the required image
-    // after all, you need to return the url of the selected image
-    // in case local
-    // return 'local://default.jpg';
-    return 'https://images.unsplash.com/photo-1541336528065-8f1fdc435835?ixlib=rb-1.2.1&auto=format&fit=crop&w=1750&q=80';
+    let url;
+    if(id >= 0){
+        // TODO: in case there was no tags fetch all
+        // TODO: in case it was random skip randonly
+        await pictureModel.aggregate([
+            {$unwind: '$tags'},
+            {$match: {tags: {$in: queryTags}}},
+            {$project:{ url:1}},
+            {$skip : id },
+            {$limit : 1 }
+        ]).then((data) =>{
+            try{
+                url = data[0].url
+            }catch{
+                url = defaultImg;
+            }
+        });
+    }
+    else {
+        url = defaultImg;
+    }
+    
+    return url;
 }
 
 function getLocalImg(path){
@@ -26,7 +45,7 @@ function getLocalImg(path){
     return fs.createReadStream(mainPath + path.substr(7));
 }
 
-async function fetchImageAndResize(path, format, width, height) {
+async function fetchImageAndResize(path, width, height) {
     let isLocal = path.substr(0,8) == 'local://';
     let readStream;
     if(isLocal){
@@ -36,10 +55,6 @@ async function fetchImageAndResize(path, format, width, height) {
     }
 
     let transform = sharp()
-  
-    if (format) {
-      transform = transform.toFormat(format)
-    }
   
     if (width || height) {
       transform = transform.resize(width, height)
@@ -58,11 +73,9 @@ async function pictureHandler(req,res) {
     if(height != undefined){
         height = Math.max(Math.min(MaxImgHeight,height),MinImgHeight);
     }
-
-    let id = parseInt(req.param.id) != NaN?parseInt(req.param.id):undefined;
-    if(id != undefined){
-        id = Math.max(id,0);
-    }
+    
+    let id = parseInt(req.params.id) != NaN?parseInt(req.params.id):undefined;
+    console.log(id);
 
     let tags = [];
     for (const element in req.query) {
@@ -71,10 +84,9 @@ async function pictureHandler(req,res) {
         }
     }
 
-    let imgPath = selectImage(id,tags);
-    res.type('image/jpg');
+    let imgPath = await selectImage(id,tags);
 
-    let stream = await fetchImageAndResize(imgPath, 'jpg', width, height);
+    let stream = await fetchImageAndResize(imgPath, width, height);
     stream.pipe(res);
 }
 
