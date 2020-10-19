@@ -16,12 +16,25 @@ function selectImage(id,tags)
     // if isRandom=true, change id to a valid id in the results space
     // now choose from the database the required image
     // after all, you need to return the url of the selected image
-
+    // in case local
+    // return 'local://default.jpg';
     return 'https://images.unsplash.com/photo-1541336528065-8f1fdc435835?ixlib=rb-1.2.1&auto=format&fit=crop&w=1750&q=80';
 }
 
+function getLocalImg(path){
+    let mainPath = 'src/public/pictures';
+    return fs.createReadStream(mainPath + path.substr(7));
+}
+
 async function fetchImageAndResize(path, format, width, height) {
-    const readStream = request.get(path);
+    let isLocal = path.substr(0,8) == 'local://';
+    let readStream;
+    if(isLocal){
+        readStream = getLocalImg(path);
+    }else{
+        readStream = request.get(path);
+    }
+
     let transform = sharp()
   
     if (format) {
