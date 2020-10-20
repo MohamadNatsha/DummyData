@@ -1,4 +1,4 @@
-const model = require('../models/picture');
+const model = require('../models/picture-model');
 const router = require('express').Router();
 
 router.post('/img/add', (req, res) => {

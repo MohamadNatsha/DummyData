@@ -3,7 +3,7 @@ const fs = require('fs'),
     { format } = require("sharp"),
     axios = require('axios'),
     request = require('request'),
-    pictureModel = require('../models/picture');
+    pictureModel = require('../models/picture-model');
 
 const MaxImgWidth = 2048;
 const MinImgWidth = 16;

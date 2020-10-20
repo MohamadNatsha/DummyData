@@ -1,8 +1,8 @@
 const router = require('express').Router(),
-    pic = require('./picture'),
-    video = require('./video'),
-    text = require('./text'),
-    admin = require('./admin');
+    pic = require('./picture-router'),
+    video = require('./video-router'),
+    text = require('./text-router'),
+    admin = require('./admin-router');
 
 //just for testing
 router.get('/', (req, res) => {
