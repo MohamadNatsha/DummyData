@@ -1,7 +1,7 @@
 const model = require('../models/picture');
 const router = require('express').Router();
 
-router.post('/img/add',(req,res) =>{
+router.post('/img/add', (req, res) => {
     model.insertMany([{
         url: req.body.url,
         tags: req.body.tags
