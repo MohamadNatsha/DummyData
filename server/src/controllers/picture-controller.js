@@ -1,9 +1,11 @@
+const { query } = require('express');
 const fs = require('fs'),
     sharp = require('sharp'),
     { format } = require("sharp"),
     axios = require('axios'),
     request = require('request'),
-    pictureModel = require('../models/picture-model');
+    pictureModel = require('../models/picture-model'),
+    url = require('url');
 
 const MaxImgWidth = 2048;
 const MinImgWidth = 16;
@@ -18,19 +20,47 @@ const defaultImg = 'local://default.jpg';
  * @param {*} queryTags 
  * @returns {string}
  */
+
+async function randomIndx(queryTags){
+    // TODO: in case it was random skip randonly
+    let rndResult = -1;
+    let query = [];
+    
+    if(queryTags.length > 0){
+        query.push({ $unwind: '$tags' });
+        query.push({  $match: { tags: { $in: queryTags } } })
+    }
+
+    query.push({
+        $count: "size"
+    });
+
+    await pictureModel.aggregate(query).then((data) => {
+        try{
+            rndResult = Math.floor(Math.random() * Math.floor(data[0].size));
+        }catch{
+
+        }
+    });
+
+    return rndResult;
+}
+
 async function selectImage(id, queryTags) {
     let isRandom = id == undefined;
     let url;
     if (id >= 0) {
-        // TODO: in case there was no tags fetch all
         // TODO: in case it was random skip randonly
-        await pictureModel.aggregate([
-            { $unwind: '$tags' },
-            { $match: { tags: { $in: queryTags } } },
-            { $project: { url: 1 } },
-            { $skip: id },
-            { $limit: 1 }
-        ]).then((data) => {
+        let query = [];
+
+        if(queryTags.length > 0){
+            query.push({ $unwind: '$tags' });
+            query.push({  $match: { tags: { $in: queryTags } } })
+        }
+
+        query.push({ $project: { url: 1 } },{ $skip: id },{ $limit: 1 });
+        
+        await pictureModel.aggregate(query).then((data) => {
             try {
                 url = data[0].url
             } catch {
@@ -51,7 +81,7 @@ async function selectImage(id, queryTags) {
  * @returns {string}  
  */
 function getLocalImg(path) {
-    let mainPath = 'src/public/pictures';
+    let mainPath = 'public/pictures';
     return fs.createReadStream(mainPath + path.substr(7));
 }
 
@@ -87,18 +117,19 @@ async function fetchImageAndResize(path, width, height) {
  * @returns {string}
  */
 async function pictureHandler(req, res) {
-    let width = parseInt(req.query.w) != NaN ? parseInt(req.query.w) : undefined;
+    let width = parseInt(req.query.w);
+    width = isNaN(width) ? undefined : width;
     if (width != undefined) {
         width = Math.max(Math.min(MaxImgWidth, width), MinImgWidth);
     }
 
-    let height = parseInt(req.query.h) != NaN ? parseInt(req.query.h) : undefined;
+    let height = parseInt(req.query.h);
+    height = isNaN(height) ? undefined : height;
     if (height != undefined) {
         height = Math.max(Math.min(MaxImgHeight, height), MinImgHeight);
     }
 
     let id = parseInt(req.params.id) != NaN ? parseInt(req.params.id) : undefined;
-    console.log(id);
 
     let tags = [];
     for (const element in req.query) {
@@ -113,6 +144,28 @@ async function pictureHandler(req, res) {
     stream.pipe(res);
 }
 
+async function randomPictureHandler(req,res){
+    let tags = [];
+    for (const element in req.query) {
+        if (req.query[element] == "") {
+            tags.push(element);
+        }
+    }
+
+    let x = await randomIndx(tags);
+    
+    let newUrl = req.baseUrl + '/' + x;
+    if(Object.keys(req.query).length > 0){
+        newUrl += '?';
+    }
+
+    let rawQuery = url.parse(req.url).query?url.parse(req.url).query:"";
+    newUrl += rawQuery;
+    
+    res.redirect(newUrl);
+}
+
 module.exports = {
-    pictureHandler
+    pictureHandler,
+    randomPictureHandler
 }

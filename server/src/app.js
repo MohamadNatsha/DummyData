@@ -12,12 +12,6 @@ app.use(bodyParser.urlencoded({ extended: true })); // for admin website
 app.use(bodyParser.json()); // API Request
 app.use(express.static(__dirname + './public'));
 
-app.get('/', (req, res) => {
-    res.json({
-        message: "LOL"
-    })
-});
-
 //Database Connecting ./..
 const url = `mongodb://localhost:27017/dummyData`;
 console.log('Connecting to database...');
@@ -31,7 +25,7 @@ mongoose.connect(url, { useNewUrlParser: true, useCreateIndex: true, useUnifiedT
 
 
 //API's
-app.use('/api/v1', routeHandler);
+app.use('/', routeHandler);
 //Middlewares
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
