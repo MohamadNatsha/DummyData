@@ -1,5 +1,7 @@
 const fs = require('fs');
 const request = require('request');
+const path = require('path');
+
 /**
  * Get local image path
  * @param {*} path 
@@ -55,10 +57,33 @@ async function randomIndx(queryTags,model){
     return rndResult;
 }
 
+async function getRemoteFile(path){
+    let hashed = hashcode(path);
+    
+    if (path.existsSync('cache/' + hashed)) { 
+        hashed = 'local://cache/' + hashed;
+        return getLocalFile(hashed);
+    } else {
+        return request.get(path);
+    }
+}
+
 function getFile(path){
     let isLocal = path.substr(0, 8) == 'local://';
-    let readStream = isLocal?getLocalFile(path):request.get(path);
+    let readStream = isLocal?getLocalFile(path):getRemoteFile(path);
     return readStream;
+}
+
+function hashcode(str) {
+   
+    var hash = 0, i, chr;
+    for (i = 0; i < str.length; i++) {
+    chr   = str.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+    }
+
+    return hash;
 }
 
 module.exports = {
