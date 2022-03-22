@@ -1,6 +1,6 @@
 const fs = require('fs');
 const request = require('request');
-const path = require('path');
+const systemPath = require('path');
 
 /**
  * Get local image path
@@ -60,17 +60,18 @@ async function randomIndx(queryTags,model){
 async function getRemoteFile(path){
     let hashed = hashcode(path);
     
-    if (path.existsSync('cache/' + hashed)) { 
+    if (fs.existsSync('cache/' + hashed)) { 
         hashed = 'local://cache/' + hashed;
         return getLocalFile(hashed);
     } else {
-        return request.get(path);
+        // TODO: store file in cache
+        return await request.get(path);
     }
 }
 
-function getFile(path){
+async function getFile(path){
     let isLocal = path.substr(0, 8) == 'local://';
-    let readStream = isLocal?getLocalFile(path):getRemoteFile(path);
+    let readStream = isLocal?getLocalFile(path):await getRemoteFile(path);
     return readStream;
 }
 

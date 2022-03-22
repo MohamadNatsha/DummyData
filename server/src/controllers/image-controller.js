@@ -1,5 +1,5 @@
 const sharp = require('sharp'),
-    pictureModel = require('../models/picture-model'),
+    imageModel = require('../models/image-model'),
     url = require('url');
 const mediaManager = require('./media');
 
@@ -8,7 +8,7 @@ const MinImgWidth = 16;
 const MaxImgHeight = 1500;
 const MinImgHeight = 16;
 
-const defaultImg = 'local://pictures/default.jpg';
+const defaultImg = 'local://images/default.jpg';
 
 /**
  *
@@ -18,7 +18,7 @@ const defaultImg = 'local://pictures/default.jpg';
  * @returns {string} 
  */
 async function fetchImageAndResize(path, width, height) {
-    let readStream = mediaManager.getFile(path);
+    let readStream = await mediaManager.getFile(path);
         
     let transform = sharp();
     if (width || height) {
@@ -34,7 +34,7 @@ async function fetchImageAndResize(path, width, height) {
  * @param {*} res 
  * @returns {string}
  */
-async function pictureHandler(req, res) {
+async function imageHandler(req, res) {
     let width = parseInt(req.query.w);
     width = isNaN(width) ? undefined : width;
     if (width != undefined) {
@@ -58,7 +58,7 @@ async function pictureHandler(req, res) {
     }
 
     // fetch img path
-    let imgPath = await mediaManager.selectFilter(id, tags,pictureModel);
+    let imgPath = await mediaManager.selectFilter(id, tags,imageModel);
     imgPath = imgPath != undefined?imgPath:defaultImg;
 
     // fetch image and resize it
@@ -66,7 +66,7 @@ async function pictureHandler(req, res) {
     stream.pipe(res);
 }
 
-async function randomPictureHandler(req,res){
+async function randomImageHandler(req,res){
     let tags = [];
     for (const element in req.query) {
         if (req.query[element] == "") {
@@ -74,7 +74,7 @@ async function randomPictureHandler(req,res){
         }
     }
 
-    let x = await mediaManager.randomIndx(tags,pictureModel);
+    let x = await mediaManager.randomIndx(tags,imageModel);
     
     let newUrl = req.baseUrl + '/' + x;
     if(Object.keys(req.query).length > 0){
@@ -88,7 +88,7 @@ async function randomPictureHandler(req,res){
 }
 
 module.exports = {
-    pictureHandler,
-    randomPictureHandler
+    imageHandler,
+    randomImageHandler
 }
 

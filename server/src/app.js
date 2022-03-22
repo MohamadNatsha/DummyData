@@ -3,8 +3,6 @@ const express = require('express'),
     routeHandler = require('./routers/router'),
     mongoose = require('mongoose');
 
-require('dotenv').config({ path: '../../.env' });
-
 const app = express();
 const middlewares = require('./middlewares');
 

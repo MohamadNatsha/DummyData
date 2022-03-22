@@ -5,10 +5,11 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - PORT=3000
       - DB_HOST=db
       - DB_PORT=27018
     volumes:
-      - ./server:/server
+      - ./server/src:/app/src
     networks:
       - dummy-data-network
   db:
@@ -16,7 +17,11 @@ services:
     ports:
       - "27018:27018"
     command: mongod --port 27018 --bind_ip_all
+    volumes:
+      - db_data:/data/db
     networks:
       - dummy-data-network
 networks:
   dummy-data-network:
+volumes:
+  db_data:
