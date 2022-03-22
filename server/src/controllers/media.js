@@ -9,7 +9,7 @@ const path = require('path');
  */
 
 function getLocalFile(path) {
-    let mainPath = 'public';
+    let mainPath = '/app/src/public';
     return fs.createReadStream(mainPath + path.substr(7));
 }
 

@@ -1,0 +1,22 @@
+version: "3.3"
+services:
+  api:
+    build: ./server
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=27018
+    volumes:
+      - ./server:/server
+    networks:
+      - dummy-data-network
+  db:
+    image: mongo:3.5
+    ports:
+      - "27018:27018"
+    command: mongod --port 27018 --bind_ip_all
+    networks:
+      - dummy-data-network
+networks:
+  dummy-data-network:

@@ -13,8 +13,10 @@ app.use(bodyParser.json()); // API Request
 app.use(express.static(__dirname + './public'));
 
 //Database Connecting ./..
-const url = `mongodb://localhost:27017/dummyData`;
-console.log('Connecting to database...');
+const dbHost = process.env.DB_HOST;
+const dbPort = process.env.DB_PORT;
+const url = `mongodb://${dbHost}:${dbPort}/dummy_data`;
+console.log('Connecting to database "url"...');
 mongoose.connect(url, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true })
     .then(() => {
         console.log('Connected to database successfully.');
